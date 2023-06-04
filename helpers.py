@@ -37,6 +37,7 @@ class SurfaceMapping:
             11: ('Hidden Road', 'white'),
         }
 
+
 def show_image_from_np(photo=None, mask=None, figsize=(10, 10)):
     if photo is not None or mask is not None:
         plt.figure(figsize=figsize)
@@ -56,7 +57,7 @@ def show_image_from_np(photo=None, mask=None, figsize=(10, 10)):
         plt.show()
 
 
-def visualize_data(dataset_dir, show_masks=True, max_samples=5, shuffle=True, labels=None):
+def visualize_data(dataset_dir, show_masks=True, max_samples=5, shuffle=True, labels=None, only=False):
     photo_folder = os.path.join(dataset_dir, "photos")
     mask_folder = os.path.join(dataset_dir, "masks")
 
@@ -73,13 +74,21 @@ def visualize_data(dataset_dir, show_masks=True, max_samples=5, shuffle=True, la
             photo_path = os.path.join(photo_folder, file_name)
             mask_path = os.path.join(mask_folder, mask_file_name)
 
-            with rasterio.open(photo_path) as photo_ds:
-                # photo = photo_ds.read([1,2,3])  # Assuming single band image
-                photo = np.transpose(photo_ds.read([1, 2, 3]), (1, 2, 0))  # Load n layers
-
             if show_masks:
                 with rasterio.open(mask_path) as mask_ds:
                     mask = mask_ds.read(1)  # Assuming single band mask
+
+                    # these conditions don't work as intended
+                    if only and labels and any(np.setdiff1d(mask, labels)) and not all(np.isin(labels, mask)):
+                        continue
+                    elif not only and labels and any(np.isin(labels, mask)):  # this one especially
+                        continue
+            else:
+                mask = None
+
+            with rasterio.open(photo_path) as photo_ds:
+                # photo = photo_ds.read([1,2,3])  # Assuming single band image
+                photo = np.transpose(photo_ds.read([1, 2, 3]), (1, 2, 0))  # Load n layers
 
             show_image_from_np(photo, mask)
             cnt += 1

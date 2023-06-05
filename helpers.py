@@ -38,24 +38,45 @@ class SurfaceMapping:
         }
 
 
-def show_image_from_np(photo=None, mask=None, figsize=(10, 10)):
-    if photo is not None or mask is not None:
+def show_image_from_np(photo=None, mask=None, figsize=(10, 10), ax=None):
+    if (photo is not None or mask is not None) and ax is None:
         plt.figure(figsize=figsize)
+
     if photo is not None:
-        plt.imshow(photo)
+        if not np.issubdtype(photo.dtype, np.integer):
+            photo = photo.astype('int32')
+        if ax is not None:
+            ax.imshow(photo)
+        else:
+            plt.imshow(photo)
+
     if mask is not None:
+        if not np.issubdtype(mask.dtype, np.integer):
+            mask = mask.astype('int32')
         unique_values = np.unique(mask)
         unique_values = unique_values[unique_values > 0]
+        if not np.issubdtype(mask.dtype, np.floating):
+            mask = mask.astype('float32')
         mask[np.where(mask == 0)] = np.nan
         color_map = ListedColormap([SurfaceMapping().mapping_names_colors[pos][1] for pos in range(1, 12)])
-        plt.imshow(mask, alpha=0.5, cmap=color_map, vmin=1, vmax=11)
         legend_handles = [mpatches.Patch(color=SurfaceMapping().mapping_names_colors[value][1],
                                          label=SurfaceMapping().mapping_names_colors[value][0])
                           for value in unique_values]
-        plt.legend(handles=legend_handles, title='Pixel Values')
-    if photo is not None or mask is not None:
+        if ax is not None:
+            ax.imshow(mask, alpha=0.5, cmap=color_map, vmin=1, vmax=11)
+            ax.legend(handles=legend_handles, title='Pixel Values')
+        else:
+            plt.imshow(mask, alpha=0.5, cmap=color_map, vmin=1, vmax=11)
+            plt.legend(handles=legend_handles, title='Pixel Values')
+    if (photo is not None or mask is not None) and ax is None:
         plt.show()
 
+
+def compare_predicted_mask(photo=None, true_mask=None, pred_mask=None, figsize=(20, 10)):
+    fig, axs = plt.subplots(1, 2, figsize=figsize)
+    show_image_from_np(photo, true_mask, ax=axs[0])
+    show_image_from_np(photo, pred_mask, ax=axs[1])
+    plt.show()
 
 def visualize_data(dataset_dir, show_masks=True, max_samples=5, shuffle=True, labels=None, only=False):
     photo_folder = os.path.join(dataset_dir, "photos")

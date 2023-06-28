@@ -22,6 +22,7 @@ def iou_loss(y_true, y_pred):
     iou = (intersection + smooth) / (union + smooth)
     return 1.0 - iou
 
+
 def dice_dice_loss(y_true, y_pred):
     GAMMA = 2
     SMOOTH = 1e-6

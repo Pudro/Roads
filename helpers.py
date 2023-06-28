@@ -75,8 +75,25 @@ def show_image_from_np(photo=None, mask=None, figsize=(10, 10), ax=None):
 def compare_predicted_mask(photo=None, true_mask=None, pred_mask=None, figsize=(20, 10)):
     fig, axs = plt.subplots(1, 2, figsize=figsize)
     show_image_from_np(photo, true_mask, ax=axs[0])
+    axs[0].title.set_text('Ground Truth')
     show_image_from_np(photo, pred_mask, ax=axs[1])
+    axs[1].title.set_text('Predicted Labels')
     plt.show()
+    return fig, axs
+
+
+def visualize_error(photo=None, true_mask=None, pred_mask=None, figsize=(30,10)):
+    fig, axs = plt.subplots(1, 3, figsize=figsize)
+    show_image_from_np(photo, true_mask, ax=axs[0])
+    axs[0].title.set_text('Ground Truth')
+    show_image_from_np(photo, pred_mask, ax=axs[1])
+    axs[1].title.set_text('Predicted Labels')
+    error_mat = np.where(pred_mask==true_mask, 1, 3)
+    show_image_from_np(mask=error_mat, ax=axs[2])
+    axs[2].title.set_text('Error')
+    axs[2].get_legend().remove()
+    plt.show()
+
 
 def visualize_data(dataset_dir, show_masks=True, max_samples=5, shuffle=True, labels=None, only=False):
     photo_folder = os.path.join(dataset_dir, "photos")
